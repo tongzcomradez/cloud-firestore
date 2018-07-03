@@ -1,0 +1,45 @@
+<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
+
+<input type="text" id="message">
+<button onClick="sendMsg()">ส่งข้อความ</button>
+<ul id="list-chat"></ul>
+<script>
+    var config = {
+        /* your firebase config*/
+    };
+
+    firebase.initializeApp(config);
+
+    var db = firebase.firestore();
+    const settings = {
+        timestampsInSnapshots: true
+    }
+    db.settings(settings);
+
+    const sendMsg = () => {
+        const msg = $('#message').val()
+        if (msg !== '') {
+            db.collection("messages").add({
+                message: msg,
+                date_created: Date.now()
+            })
+
+            $('#message').val('')
+        }
+    }
+
+    const readData = () => {
+        db.collection("messages").orderBy("date_created")
+            .onSnapshot({
+                includeQueryMetadataChanges: true
+            }, function (docs) {
+                $('#list-chat').html('')
+                docs.forEach((doc) => {
+                    $('#list-chat').append(`<li>${doc.data().message}</li>`)
+                })
+            });
+    }
+
+    readData()
+</script>
